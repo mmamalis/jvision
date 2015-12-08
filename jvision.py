@@ -427,7 +427,7 @@ You have to define an action:
     --vlans flag or
     --ifces flag or
     --inventory or
-    --macs or
+    --macs (with optional --findmac flag) or
     --help for help\n
 """)
         sys.exit(1)
