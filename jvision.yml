@@ -1,0 +1,126 @@
+# -----------------------------------------------------------------------------
+# YAML tables that are used to extract information from Juniper devices
+# some are used to override the Juniper default
+# tables usually located at /usr/local/lib/python2.7/dist-packages/jnpr/junos/op/
+# and some (like th XcvrTable) are the Juniper default and displayed here for 
+# convenience
+# -----------------------------------------------------------------------------
+
+ChassisTable:
+    rpc: get-chassis-inventory
+    item: .//*[name]
+    key: name
+    view: DefaultInvView
+
+DefaultInvView:
+    fields:
+        serial_number: serial-number
+        part_number: part-number
+        description: description
+        version: version
+        # mics: .//chassis-sub-module/*
+        # pics: .//chassis-sub-sub-module/*
+        # xcvrs: .//chassis-sub-sub-submodule/*
+
+ChassisMicTable:
+    rpc: get-chassis-inventory
+    item: .//chassis-sub-module
+    key: 
+        - ancestor::*[starts-with(name,'FPC')]/name
+        - name
+    view: DefaultInvView
+
+ChassisPicTable:
+    rpc: get-chassis-inventory
+    item: .//chassis-sub-sub-module
+    key: 
+        - ancestor::*[starts-with(name,'FPC')]/name
+        - ancestor::*[starts-with(name,'MIC')]/name
+        - name
+    view: DefaultInvView
+
+XcvrTable:
+  rpc: get-chassis-inventory
+  item: //*[starts-with(name,"Xcvr")]
+  key:
+    - ancestor::*[starts-with(name,'FPC')]/name
+    - ancestor::*[starts-with(name,'PIC')]/name
+    - name
+  view: XcvrTableView
+
+XcvrTableView:
+  fields:
+    sn: serial-number
+    pn: part-number
+    ver: version
+    type: description
+
+EthPortTable:
+    rpc: get-interface-information
+    args:
+        media: True
+        interface_name: '[afgx]e*'
+    args_key: interface_name
+    item: physical-interface
+    view: EthPortView
+
+EthPortView:
+  groups:
+    mac_stats: ethernet-mac-statistics
+    flags: if-device-flags
+  fields:
+    oper: oper-status
+    admin: admin-status
+    description: description
+    mtu: { mtu : int }
+    link_mode: link-mode
+    macaddr: current-physical-address
+  fields_mac_stats:
+    rx_bytes: input-bytes
+    rx_packets: input-packets
+    tx_bytes: output-bytes
+    tx_packets: output-packets
+  fields_flags:
+    running: { ifdf-running: flag }
+    present: { ifdf-present: flag }
+
+VlanTable:
+    rpc: get-vlan-information
+    item: vlan
+    key: vlan-name
+    view: VlanView
+
+VlanView:
+    fields:
+        # name: vlan-name
+        tag: vlan-tag
+        # created: vlan-create-time
+        status: vlan-status
+        members: .//vlan-member-interface
+
+VlanElsTable:
+    rpc: l2ng-l2ald-vlan-instance-information
+    item: l2ng-l2ald-vlan-instance-group
+    key: .//l2ng-l2rtb-vlan-name
+    view: VlanElsView
+
+VlanElsView:
+    fields:
+        name: l2ng-l2rtb-vlan-name
+        # tag: l2ng-l2rtb-vlan-tag
+        # status: l2ng-l2rtb-instance-state
+        # members: .//l2ng-l2rtb-vlan-member-interface
+
+EtherSwTable:
+  rpc: get-ethernet-switching-table-information
+  item: ethernet-switching-table/mac-table-entry
+  key: mac-address
+  view: EtherSwView
+
+EtherSwView:
+  fields:
+    vlan_name: mac-vlan
+    mac: mac-address
+    mac_type: mac-type
+    mac_age: mac-age
+    interface: mac-interfaces-list/mac-interfaces
