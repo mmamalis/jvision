@@ -6,10 +6,10 @@ table views.
 Results are tracked in log file.
 
 Data supported in this version:
-    --vlans flag or
-    --ifces flag or
-    --inventory or
-    --macs (with optional --findmac flag) or
+    - vlans flag or
+    - ifces flag or
+    - inventory or
+    - macs (with optional --findmac flag) or
 
 Example Usage:
 jvision.py --hosts hosts_file.txt --log=DEBUG --inventory
